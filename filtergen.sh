@@ -6,9 +6,22 @@ OPENBGPD_CONFIG="/etc/bgpd.conf"
 PREFIXSETS_FILE="/etc/filters/openbgpd.conf"
 MAX_DELTA_PERCENTAGE=20
 
+# Check if force flag has been passed
+ignore_delta="$([ "${1:-}" != "force" ] && echo "yes" || echo "no")"
+
 # Ensure OpenBGPD configuration exists
 if [ ! -r "${OPENBGPD_CONFIG}" ]; then
 	echo "> Could not read OpenBGPD configuration from [${OPENBGPD_CONFIG}], exiting now!"
+	exit 1
+fi
+
+# Ensure output file exists and is writable
+if [ ! -f "${PREFIXSETS_FILE}" ]; then
+	echo "> Could not find existing prefixsets file, creating empty file at [${PREFIXSETS_FILE}]..."
+	touch "${PREFIXSETS_FILE}"
+fi
+if [ ! -w "${PREFIXSETS_FILE}" ]; then
+	echo "> Could not open prefixsets file for writing, please check your permissions..."
 	exit 1
 fi
 
@@ -51,6 +64,7 @@ if [ "${current_lines}" -gt 0 ]; then
 	delta_percentage="$((changed_lines * 100 / current_lines))"
 else
 	delta_percentage=100
+	ignore_delta=yes
 fi
 echo "> Statistics: Changed ${changed_lines} of ${current_lines} lines with ${delta_percentage}% delta"
 
@@ -60,8 +74,8 @@ if [ "${delta_percentage}" -eq "0" ]; then
 	exit 0
 fi
 
-# Abort if delta is above threshold and force has not been specified
-if [ "${1:-}" != "force" ] && [ "${delta_percentage}" -gt "${MAX_DELTA_PERCENTAGE}" ]; then
+# Abort if delta is above threshold and not being ignored
+if [ "${ignore_delta}" != "yes" ] && [ "${delta_percentage}" -gt "${MAX_DELTA_PERCENTAGE}" ]; then
 	echo "> Too many changes (over ${MAX_DELTA_PERCENTAGE}% delta), aborting generation..."
 	echo "> Run as [${0} force] to force generation. Exiting now!"
 	exit 2
