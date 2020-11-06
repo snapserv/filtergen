@@ -25,7 +25,7 @@ ignore_delta="$([ "${1:-}" = "force" ] && echo "yes" || echo "no")"
 
 # Ensure OpenBGPD configuration exists
 if [ ! -r "${OPENBGPD_CONFIG}" ]; then
-	echo "> Could not read OpenBGPD configuration from [${OPENBGPD_CONFIG}], exiting now!"
+	echo "> Could not read OpenBGPD configuration from [${OPENBGPD_CONFIG}]. Exiting now!"
 	exit 1
 fi
 
@@ -35,7 +35,13 @@ if [ ! -f "${PREFIXSETS_FILE}" ]; then
 	touch "${PREFIXSETS_FILE}"
 fi
 if [ ! -w "${PREFIXSETS_FILE}" ]; then
-	echo "> Could not open prefixsets file for writing, please check your permissions..."
+	echo "> Could not open prefixsets file for writing, please check your permissions. Exiting now!"
+	exit 1
+fi
+
+# Ensure bgpq3 exists and is executable
+if [ ! -x "${BGPQ3_PATH}" ]; then
+	echo "> Could not find bgpq3, ensure [${BGPQ3_PATH}] exists and is executable. Exiting now!"
 	exit 1
 fi
 
@@ -60,12 +66,12 @@ echo "${prefixsets}" | while IFS= read -r line; do
 	# Generate prefix filters
 	if [ "${family}" = "ipv4" ]; then
 		if ! "${BGPQ3_PATH}" -4 -B -A -E -R "${BGPQ3_MAXPREFLEN_V4}" -l "${prefixset}" -S "${BGPQ3_SOURCES}" "${irr}" >> "${genfile}"; then
-			echo "> Could not generate IPv4 filters for AS${asn}, exiting now..."
+			echo "> Could not generate IPv4 filters for AS${asn}. Exiting now!"
 			exit 2
 		fi
 	elif [ "${family}" = "ipv6" ]; then
 		if ! "${BGPQ3_PATH}" -6 -B -A -E -R "${BGPQ3_MAXPREFLEN_V6}" -l "${prefixset}" -S "${BGPQ3_SOURCES}" "${irr}" >> "${genfile}"; then
-			echo "> Could not generate IPv6 filters for AS${asn}, exiting now..."
+			echo "> Could not generate IPv6 filters for AS${asn}. Exiting now!"
 			exit 2
 		fi
 	fi
@@ -125,9 +131,9 @@ fi
 # Reload daemon configuration
 echo "> Reloading BGP daemon..."
 if ! bgpctl reload; then
-	echo "> Could not reload BGP daemon, exiting now!"
+	echo "> Could not reload BGP daemon. Exiting now!"
 	exit 5
 fi
 
 # Inform about completion
-echo "> Successfully updated filters, exiting now..."
+echo "> Successfully updated filters. Exiting now..."
