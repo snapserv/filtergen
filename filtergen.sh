@@ -1,10 +1,24 @@
 #!/bin/sh
 set -euo pipefail
 
-# Configuration
+# Determine path to script
+SCRIPT_PATH="$(dirname "$(readlink -f "$0")")"
+
+# Default configuration
 OPENBGPD_CONFIG="/etc/bgpd.conf"
 PREFIXSETS_FILE="/etc/filters/openbgpd.conf"
+BGPQ3_PATH="/usr/local/bin/bgpq3"
+BGPQ3_SOURCES="RIPE,RADB"
+BGPQ3_MAXPREFLEN_V4=24
+BGPQ3_MAXPREFLEN_V6=48
 MAX_DELTA_PERCENTAGE=20
+
+# Load user configuration if available
+if [ -r "${SCRIPT_PATH}/filtergen.conf" ]; then
+	set -o allexport
+	. "${SCRIPT_PATH}/filtergen.conf"
+	set +o allexport
+fi
 
 # Check if force flag has been passed
 ignore_delta="$([ "${1:-}" != "force" ] && echo "yes" || echo "no")"
@@ -45,12 +59,12 @@ echo "${prefixsets}" | while IFS= read -r line; do
 
 	# Generate prefix filters
 	if [ "${family}" = "ipv4" ]; then
-		if ! /usr/local/bin/bgpq3 -4 -B -A -E -R 24 -l "${prefixset}" -S RIPE,RADB "${irr}" >> "${genfile}"; then
+		if ! "${BGPQ3_PATH}" -4 -B -A -E -R "${BGPQ3_MAXPREFLEN_V4}" -l "${prefixset}" -S "${BGPQ3_SOURCES}" "${irr}" >> "${genfile}"; then
 			echo "> Could not generate IPv4 filters for AS${asn}, exiting now..."
 			exit 2
 		fi
 	elif [ "${family}" = "ipv6" ]; then
-		if ! /usr/local/bin/bgpq3 -6 -B -A -E -R 48 -l "${prefixset}" -S RIPE,RADB "${irr}" >> "${genfile}"; then
+		if ! "${BGPQ3_PATH}" -6 -B -A -E -R "${BGPQ3_MAXPREFLEN_V6}" -l "${prefixset}" -S "${BGPQ3_SOURCES}" "${irr}" >> "${genfile}"; then
 			echo "> Could not generate IPv6 filters for AS${asn}, exiting now..."
 			exit 2
 		fi
