@@ -6,6 +6,12 @@ OPENBGPD_CONFIG="/etc/bgpd.conf"
 PREFIXSETS_FILE="/etc/filters/openbgpd.conf"
 MAX_DELTA_PERCENTAGE=20
 
+# Ensure OpenBGPD configuration exists
+if [ ! -r "${OPENBGPD_CONFIG}" ]; then
+	echo "> Could not read OpenBGPD configuration from [${OPENBGPD_CONFIG}], exiting now!"
+	exit 1
+fi
+
 # Prepare temporary file for generation
 genfile="$(mktemp /tmp/filtergen.XXXXXX)"
 trap "rm -f '${genfile}'" EXIT
