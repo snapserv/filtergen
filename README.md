@@ -34,7 +34,7 @@ include "/etc/filters/openbgpd.conf"
 Now whenever the script is being launched, all prefix filters get updated and OpenBGPD gets automatically reloaded once the updated prefix sets are in place. You can automate this procedure using a regular crontab, e.g.:
 
 ```
-~	*	*	*	*	-ns /bin/sh /etc/filters/filtergen.sh
+~	*	*	*	*	-ns /etc/filters/filtergen.sh
 ```
 
 Please note that the script will never update the existing prefix sets and exit with an error if the delta compared to the current file is greater than `MAX_DELTA_PERCENTAGE` percent, which defaults to `20` percent. You may change this by updating the configuration file (see next section) or temporarily override this safety feature by calling the script with the argument `force`.
