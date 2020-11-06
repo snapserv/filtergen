@@ -47,6 +47,8 @@ BGPQ3_SOURCES="RIPE"
 MAX_DELTA_PERCENTAGE=25
 ```
 
+All available configuration options can be found by checking the top of the script.
+
 ## Recognized Syntax
 The script only recognizes lines with one of the following patterns:
 
