@@ -21,7 +21,7 @@ if [ -r "${SCRIPT_PATH}/filtergen.conf" ]; then
 fi
 
 # Check if force flag has been passed
-ignore_delta="$([ "${1:-}" != "force" ] && echo "yes" || echo "no")"
+ignore_delta="$([ "${1:-}" = "force" ] && echo "yes" || echo "no")"
 
 # Ensure OpenBGPD configuration exists
 if [ ! -r "${OPENBGPD_CONFIG}" ]; then
@@ -78,7 +78,7 @@ if [ "${current_lines}" -gt 0 ]; then
 	delta_percentage="$((changed_lines * 100 / current_lines))"
 else
 	delta_percentage=100
-	ignore_delta=yes
+	ignore_delta="yes"
 fi
 echo "> Statistics: Changed ${changed_lines} of ${current_lines} lines with ${delta_percentage}% delta"
 
