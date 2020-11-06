@@ -47,12 +47,12 @@ echo "${prefixsets}" | while IFS= read -r line; do
 	if [ "${family}" = "ipv4" ]; then
 		if ! /usr/local/bin/bgpq3 -4 -B -A -E -R 24 -l "${prefixset}" -S RIPE,RADB "${irr}" >> "${genfile}"; then
 			echo "> Could not generate IPv4 filters for AS${asn}, exiting now..."
-			exit 1
+			exit 2
 		fi
 	elif [ "${family}" = "ipv6" ]; then
 		if ! /usr/local/bin/bgpq3 -6 -B -A -E -R 48 -l "${prefixset}" -S RIPE,RADB "${irr}" >> "${genfile}"; then
 			echo "> Could not generate IPv6 filters for AS${asn}, exiting now..."
-			exit 1
+			exit 2
 		fi
 	fi
 done
@@ -78,7 +78,7 @@ fi
 if [ "${ignore_delta}" != "yes" ] && [ "${delta_percentage}" -gt "${MAX_DELTA_PERCENTAGE}" ]; then
 	echo "> Too many changes (over ${MAX_DELTA_PERCENTAGE}% delta), aborting generation..."
 	echo "> Run as [${0} force] to force generation. Exiting now!"
-	exit 2
+	exit 3
 fi
 
 # Generate fake config for standalone verification
@@ -92,7 +92,7 @@ if ! bgpd -nf "${tmpcfg}"; then
 	echo "> Could not verify configuration, please check the output..."
 	cat "${tmpcfg}"
 	echo "> Exiting now!"
-	exit 3
+	exit 4
 fi
 
 # Backup and update daemon configuration
