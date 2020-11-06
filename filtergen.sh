@@ -41,8 +41,12 @@ done
 # Diff against current version and calculate delta
 current_lines="$(wc -l "${PREFIXSETS_FILE}" | awk '{$1=$1;print $1}' || exit 0)"
 changed_lines="$(sdiff -W -b -s "${PREFIXSETS_FILE}" "${genfile}" | wc -l | awk '{$1=$1;print $1}' || exit 0)"
-delta_percentage="$(expr "${changed_lines}" \* 100 / "${current_lines}" || exit 0)"
-echo "> Statistics: Changed ${changed_lines} lines with ${delta_percentage}% delta"
+if [ "${current_lines}" -gt 0 ]; then
+	delta_percentage="$(expr "${changed_lines}" \* 100 / "${current_lines}" || exit 0)"
+else
+	delta_percentage=100
+fi
+echo "> Statistics: Changed ${changed_lines} of ${current_lines} lines with ${delta_percentage}% delta"
 
 # Abort if delta is zero
 if [ "${delta_percentage}" -eq "0" ]; then
