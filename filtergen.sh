@@ -42,7 +42,7 @@ done
 current_lines="$(wc -l "${PREFIXSETS_FILE}" | awk '{$1=$1;print $1}' || exit 0)"
 changed_lines="$(sdiff -W -b -s "${PREFIXSETS_FILE}" "${genfile}" | wc -l | awk '{$1=$1;print $1}' || exit 0)"
 if [ "${current_lines}" -gt 0 ]; then
-	delta_percentage="$(expr "${changed_lines}" \* 100 / "${current_lines}" || exit 0)"
+	delta_percentage="$((changed_lines * 100 / current_lines))"
 else
 	delta_percentage=100
 fi
@@ -55,7 +55,7 @@ if [ "${delta_percentage}" -eq "0" ]; then
 fi
 
 # Abort if delta is above threshold and force has not been specified
-if [ \( "${1:-}" != "force" \) -a \( "${delta_percentage}" -gt "${MAX_DELTA_PERCENTAGE}" \) ]; then
+if [ "${1:-}" != "force" ] && [ "${delta_percentage}" -gt "${MAX_DELTA_PERCENTAGE}" ]; then
 	echo "> Too many changes (over ${MAX_DELTA_PERCENTAGE}% delta), aborting generation..."
 	echo "> Run as [${0} force] to force generation. Exiting now!"
 	exit 2
