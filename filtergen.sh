@@ -8,7 +8,7 @@ SCRIPT_PATH="$(dirname "$(readlink -f "$0")")"
 OPENBGPD_CONFIG="/etc/bgpd.conf"
 PREFIXSETS_FILE="/etc/filters/openbgpd.conf"
 BGPQ3_PATH="/usr/local/bin/bgpq3"
-BGPQ3_SOURCES="RIPE,RADB"
+BGPQ3_DEFAULT_SOURCES="RIPE,RADB"
 BGPQ3_PREFLEN4_MAX=24
 BGPQ3_PREFLEN4_UPTO=24
 BGPQ3_PREFLEN6_MAX=48
@@ -60,19 +60,31 @@ echo "${prefixsets}" | while IFS= read -r line; do
 	prefixset="$(echo "${line}" | cut -d' ' -sf1)"
 	family="$(echo "${line}" | cut -d' ' -sf2)"
 	asn="$(echo "${line}" | cut -d' ' -sf3)"
-	irr="$(echo "${line}" | cut -d' ' -sf4)"
+	spec="$(echo "${line}" | cut -d' ' -sf4)"
+
+	# Parse spec to support override of sources
+	case "${spec}" in
+		*@*)
+			irr="$(echo "${spec}" | cut -d@ -sf1)"
+			sources="$(echo "${spec}" | cut -d@ -sf2)"
+			;;
+		*)
+			irr="${spec}"
+			sources="${BGPQ3_DEFAULT_SOURCES}";
+			;;
+	esac
 
 	# Print log message about current peer
-	echo "> Processing AS${asn} (prefix-set: ${prefixset}, family: ${family}, irr: ${irr})..."
+	echo "> Processing AS${asn} (prefix-set: ${prefixset}, family: ${family}, irr: ${irr}, sources: ${sources})..."
 
 	# Generate prefix filters
 	if [ "${family}" = "ipv4" ]; then
-		if ! "${BGPQ3_PATH}" -4 -B -A -E -R "${BGPQ3_PREFLEN4_UPTO}" -m "${BGPQ3_PREFLEN4_MAX}" -l "${prefixset}" -S "${BGPQ3_SOURCES}" "${irr}" >> "${genfile}"; then
+		if ! "${BGPQ3_PATH}" -4 -B -A -E -R "${BGPQ3_PREFLEN4_UPTO}" -m "${BGPQ3_PREFLEN4_MAX}" -l "${prefixset}" -S "${sources}" "${irr}" >> "${genfile}"; then
 			echo "> Could not generate IPv4 filters for AS${asn}. Exiting now!"
 			exit 2
 		fi
 	elif [ "${family}" = "ipv6" ]; then
-		if ! "${BGPQ3_PATH}" -6 -B -A -E -R "${BGPQ3_PREFLEN6_UPTO}" -m "${BGPQ3_PREFLEN6_MAX}" -l "${prefixset}" -S "${BGPQ3_SOURCES}" "${irr}" >> "${genfile}"; then
+		if ! "${BGPQ3_PATH}" -6 -B -A -E -R "${BGPQ3_PREFLEN6_UPTO}" -m "${BGPQ3_PREFLEN6_MAX}" -l "${prefixset}" -S "${sources}" "${irr}" >> "${genfile}"; then
 			echo "> Could not generate IPv6 filters for AS${asn}. Exiting now!"
 			exit 2
 		fi
