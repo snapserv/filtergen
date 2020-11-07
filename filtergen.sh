@@ -77,6 +77,11 @@ echo "${prefixsets}" | while IFS= read -r line; do
 	# Print log message about current peer
 	echo "> Processing AS${asn} (prefix-set: ${prefixset}, family: ${family}, irr: ${irr}, sources: ${sources})..."
 
+	# Convert special value of "ALL" for sources into empty string which bgpq3 understands as any
+	if [ "${sources}" = "ALL" ]; then
+		sources=""
+	fi
+
 	# Generate prefix filters
 	if [ "${family}" = "ipv4" ]; then
 		if ! "${BGPQ3_PATH}" -4 -B -A -E -R "${BGPQ3_PREFLEN4_UPTO}" -m "${BGPQ3_PREFLEN4_MAX}" -l "${prefixset}" -S "${sources}" "${irr}" >> "${genfile}"; then
