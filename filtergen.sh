@@ -9,8 +9,10 @@ OPENBGPD_CONFIG="/etc/bgpd.conf"
 PREFIXSETS_FILE="/etc/filters/openbgpd.conf"
 BGPQ3_PATH="/usr/local/bin/bgpq3"
 BGPQ3_SOURCES="RIPE,RADB"
-BGPQ3_MAXPREFLEN_V4=24
-BGPQ3_MAXPREFLEN_V6=48
+BGPQ3_PREFLEN4_MAX=24
+BGPQ3_PREFLEN4_UPTO=24
+BGPQ3_PREFLEN6_MAX=48
+BGPQ3_PREFLEN6_UPTO=48
 MAX_DELTA_PERCENTAGE=20
 
 # Load user configuration if available
@@ -65,12 +67,12 @@ echo "${prefixsets}" | while IFS= read -r line; do
 
 	# Generate prefix filters
 	if [ "${family}" = "ipv4" ]; then
-		if ! "${BGPQ3_PATH}" -4 -B -A -E -R "${BGPQ3_MAXPREFLEN_V4}" -l "${prefixset}" -S "${BGPQ3_SOURCES}" "${irr}" >> "${genfile}"; then
+		if ! "${BGPQ3_PATH}" -4 -B -A -E -R "${BGPQ3_PREFLEN4_UPTO}" -m "${BGPQ3_PREFLEN4_MAX}" -l "${prefixset}" -S "${BGPQ3_SOURCES}" "${irr}" >> "${genfile}"; then
 			echo "> Could not generate IPv4 filters for AS${asn}. Exiting now!"
 			exit 2
 		fi
 	elif [ "${family}" = "ipv6" ]; then
-		if ! "${BGPQ3_PATH}" -6 -B -A -E -R "${BGPQ3_MAXPREFLEN_V6}" -l "${prefixset}" -S "${BGPQ3_SOURCES}" "${irr}" >> "${genfile}"; then
+		if ! "${BGPQ3_PATH}" -6 -B -A -E -R "${BGPQ3_PREFLEN6_UPTO}" -m "${BGPQ3_PREFLEN6_MAX}" -l "${prefixset}" -S "${BGPQ3_SOURCES}" "${irr}" >> "${genfile}"; then
 			echo "> Could not generate IPv6 filters for AS${asn}. Exiting now!"
 			exit 2
 		fi
