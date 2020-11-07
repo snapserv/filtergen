@@ -9,8 +9,8 @@ allow quick from AS 6939 prefix-set irr4-as6939 # AS-HURRICANE
 allow quick from AS 6939 prefix-set irr6-as6939 # AS-HURRICANEv6
 
 # AS13335 - Cloudflare
-allow quick from AS 3856 prefix-set irr4-as3856 # AS-CLOUDFLARE@ARIN,RADB
-allow quick from AS 3856 prefix-set irr6-as3856 # AS-CLOUDFLARE@ARIN,RADB
+allow quick from AS 13335 prefix-set irr4-as13335 # AS-CLOUDFLARE@ARIN,RADB
+allow quick from AS 13335 prefix-set irr6-as13335 # AS-CLOUDFLARE@ARIN,RADB
 ```
 
 This will result in generating 4 prefix sets in total:
