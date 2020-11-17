@@ -108,7 +108,7 @@ fi
 echo "> Statistics: Changed ${changed_lines} of ${current_lines} lines with ${delta_percentage}% delta"
 
 # Abort if delta is zero
-if [ "${delta_percentage}" -eq "0" ]; then
+if [ "${delta_percentage}" -eq "0" ] && [ "${changed_lines}" -eq "0" ]; then
 	echo "> Everything already up-to-date, exiting now..."
 	exit 0
 fi
